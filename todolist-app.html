@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>To-Do List with Stimulus.js</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.2/css/bulma.css"
+    />
+    <link 
+      rel="stylesheet" 
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script type="module">
+      import { Application, Controller } from "https://unpkg.com/@hotwired/stimulus/dist/stimulus.js";
+
+      window.Stimulus = Application.start();
+
+      Stimulus.register("todo", class extends Controller {
+        static targets = ["input", "list", "count", "template", "tabs"];
+        static values = { 
+          currentFilter: String,
+          tasks: Array
+        };
+
+        connect() {
+          this.currentFilterValue = "all";
+          this.loadTasks();
+          this.renderTasks();
+        }
+
+        initialize() {
+          this.tasksValue = [];
+        }
+
+        // Actions
+        add(event) {
+          if (event.type === "keypress" && event.key !== "Enter") return;
+          
+          const taskText = this.inputTarget.value.trim();
+          if (taskText === "") return;
+
+          const newTask = {
+            id: Date.now(),
+            text: taskText,
+            completed: false,
+          };
+
+          this.tasksValue = [...this.tasksValue, newTask];
+          this.inputTarget.value = "";
+          this.saveTasks();
+          this.renderTasks();
+        }
+
+        toggle(event) {
+          const id = parseInt(event.currentTarget.closest(".task-item").dataset.id);
+          
+          this.tasksValue = this.tasksValue.map((task) => {
+            if (task.id === id) {
+              return { ...task, completed: !task.completed };
+            }
+            return task;
+          });
+          
+          this.saveTasks();
+          this.renderTasks();
+        }
+
+        delete(event) {
+          const id = parseInt(event.currentTarget.closest(".task-item").dataset.id);
+          this.tasksValue = this.tasksValue.filter((task) => task.id !== id);
+          this.saveTasks();
+          this.renderTasks();
+        }
+
+        clearCompleted() {
+          this.tasksValue = this.tasksValue.filter((task) => !task.completed);
+          this.saveTasks();
+          this.renderTasks();
+        }
+
+        filter(event) {
+          const filterValue = event.currentTarget.dataset.filter;
+          
+          // Update active tab
+          this.tabsTargets.forEach(tab => {
+            tab.classList.toggle("is-active", tab.dataset.filter === filterValue);
+          });
+          
+          this.currentFilterValue = filterValue;
+          this.renderTasks();
+        }
+
+        // Helper methods
+        loadTasks() {
+          const storedTasks = localStorage.getItem("tasks");
+          if (storedTasks) {
+            this.tasksValue = JSON.parse(storedTasks);
+          }
+        }
+
+        saveTasks() {
+          localStorage.setItem("tasks", JSON.stringify(this.tasksValue));
+        }
+
+        renderTasks() {
+          // Filter tasks based on current filter
+          let filteredTasks = this.tasksValue;
+          if (this.currentFilterValue === "active") {
+            filteredTasks = this.tasksValue.filter((task) => !task.completed);
+          } else if (this.currentFilterValue === "completed") {
+            filteredTasks = this.tasksValue.filter((task) => task.completed);
+          }
+
+          // Clear task list
+          this.listTarget.innerHTML = "";
+
+          // Update task count
+          const activeCount = this.tasksValue.filter((task) => !task.completed).length;
+          this.countTarget.textContent = `${activeCount} task${
+            activeCount !== 1 ? "s" : ""
+          } left`;
+
+          // Show "No tasks" message if there are no tasks
+          if (filteredTasks.length === 0) {
+            const noTasksMsg = document.createElement("div");
+            noTasksMsg.className = "no-tasks";
+            noTasksMsg.textContent = "No tasks";
+            this.listTarget.appendChild(noTasksMsg);
+            return;
+          }
+
+          // Render tasks
+          filteredTasks.forEach((task) => {
+            const taskItem = document.createElement("div");
+            taskItem.className = "task-item";
+            taskItem.dataset.id = task.id;
+
+            // Safely encode HTML content to prevent XSS
+            const safeText = document.createTextNode(task.text).textContent;
+
+            taskItem.innerHTML = `
+              <span class="drag-handle">
+                  <i class="fas fa-grip-vertical"></i>
+              </span>
+              <span class="checkbox" data-action="click->todo#toggle">
+                  <i class="far ${
+                    task.completed ? "fa-check-square" : "fa-square"
+                  }"></i>
+              </span>
+              <span class="task-text ${
+                task.completed ? "completed" : ""
+              }">${safeText}</span>
+              <button class="button is-small is-danger is-light delete-btn" data-action="click->todo#delete">
+                  <span class="icon is-small">
+                      <i class="fas fa-trash"></i>
+                  </span>
+              </button>
+            `;
+
+            this.listTarget.appendChild(taskItem);
+          });
+        }
+      });
+    </script>
+    <style>
+      .task-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        background-color: #2c2c2c;
+        border-radius: 4px;
+      }
+      
+      .task-text {
+        flex-grow: 1;
+        margin: 0 1rem;
+        color: #fff;
+      }
+      
+      .completed {
+        text-decoration: line-through;
+        color: #888;
+      }
+      
+      .checkbox {
+        cursor: pointer;
+        margin-right: 0.5rem;
+      }
+      
+      .no-tasks {
+        text-align: center;
+        padding: 1rem;
+        color: #888;
+      }
+      
+      .drag-handle {
+        cursor: move;
+        color: #555;
+        margin-right: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="section">
+      <div class="container">
+        <h1 class="title has-text-centered">To-Do List</h1>
+
+        <div class="columns is-centered">
+          <div class="column is-half" data-controller="todo">
+            <div class="box has-background-black-bis">
+              <!-- Input form -->
+              <div class="field">
+                <div class="control">
+                  <textarea
+                    class="textarea"
+                    data-todo-target="input"
+                    placeholder="Add a new task"
+                    data-action="keypress->todo#add"
+                  ></textarea>
+                </div>
+                <div class="control mt-2">
+                  <button class="button is-link" data-action="click->todo#add">
+                    <span class="icon">
+                      <i class="fas fa-plus"></i>
+                    </span>
+                    <span>Add</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Task filters -->
+              <div class="tabs is-centered">
+                <ul>
+                  <li data-todo-target="tabs" class="is-active" data-filter="all" data-action="click->todo#filter"><a>All</a></li>
+                  <li data-todo-target="tabs" data-filter="active" data-action="click->todo#filter"><a>Active</a></li>
+                  <li data-todo-target="tabs" data-filter="completed" data-action="click->todo#filter"><a>Completed</a></li>
+                </ul>
+              </div>
+
+              <!-- Task list with improved overflow handling -->
+              <div class="task-list" data-todo-target="list">
+                <div class="no-tasks">No tasks yet</div>
+              </div>
+
+              <!-- Task controls -->
+              <div class="level is-mobile mt-4">
+                <div class="level-left">
+                  <div class="level-item">
+                    <span data-todo-target="count">0 tasks</span>
+                  </div>
+                </div>
+                <div class="level-right">
+                  <div class="level-item">
+                    <button
+                      class="button is-small is-danger is-light"
+                      data-action="click->todo#clearCompleted"
+                    >
+                      Clear Completed
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

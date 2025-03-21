@@ -1,0 +1,5 @@
+# My Template Stimulus.js
+
+:)
+
+
