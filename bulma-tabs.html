@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tabs with Stimulus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.2/css/bulma.css"/>
+    <script type="module">
+        import { Application, Controller } from "https://unpkg.com/@hotwired/stimulus/dist/stimulus.js";
+        
+        window.Stimulus = Application.start();
+
+        // Controller untuk panel tabs atas
+        Stimulus.register("tabs", class extends Controller {
+            connect() {
+                this.activateTab(this.element.querySelector(".panel-tabs a.is-active"));
+            }
+
+            activate(event) {
+                event.preventDefault();
+                this.activateTab(event.currentTarget);
+            }
+
+            activateTab(activeTab) {
+                this.element.querySelectorAll(".panel-tabs a").forEach(tab => {
+                    tab.classList.remove("is-active");
+                });
+
+                activeTab.classList.add("is-active");
+
+                const target = activeTab.dataset.target;
+                this.element.querySelectorAll(".tab-content").forEach(content => {
+                    content.classList.toggle("is-hidden", content.id !== target);
+                });
+            }
+        });
+
+        // Controller untuk tabs bawah
+        Stimulus.register("file-tabs", class extends Controller {
+            connect() {
+                this.activateTab(this.element.querySelector(".tabs li.is-active a"));
+            }
+
+            activate(event) {
+                event.preventDefault();
+                this.activateTab(event.currentTarget);
+            }
+
+            activateTab(activeTab) {
+                this.element.querySelectorAll(".tabs li").forEach(tab => {
+                    tab.classList.remove("is-active");
+                });
+
+                activeTab.parentElement.classList.add("is-active");
+
+                const target = activeTab.dataset.target;
+                this.element.querySelectorAll(".file-tab-content").forEach(content => {
+                    content.classList.toggle("is-hidden", content.id !== target);
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <section class="section">
+        <div class="container" data-controller="tabs">
+            <p class="panel-tabs">
+                <a class="is-active" data-target="all" data-action="click->tabs#activate">All</a>
+                <a data-target="public" data-action="click->tabs#activate">Public</a>
+                <a data-target="private" data-action="click->tabs#activate">Private</a>
+                <a data-target="sources" data-action="click->tabs#activate">Sources</a>
+                <a data-target="forks" data-action="click->tabs#activate">Forks</a>
+            </p>
+
+            <div id="all" class="tab-content">📂 All Repositories</div>
+            <div id="public" class="tab-content is-hidden">🌍 Public Repositories</div>
+            <div id="private" class="tab-content is-hidden">🔒 Private Repositories</div>
+            <div id="sources" class="tab-content is-hidden">💻 Source Repositories</div>
+            <div id="forks" class="tab-content is-hidden">🌿 Forked Repositories</div>
+        </div>
+
+        <div class="container" data-controller="file-tabs">
+            <div class="tabs">
+                <ul>
+                    <li class="is-active"><a data-target="pictures" data-action="click->file-tabs#activate">Pictures</a></li>
+                    <li><a data-target="music" data-action="click->file-tabs#activate">Music</a></li>
+                    <li><a data-target="videos" data-action="click->file-tabs#activate">Videos</a></li>
+                    <li><a data-target="documents" data-action="click->file-tabs#activate">Documents</a></li>
+                </ul>
+            </div>
+
+            <div id="pictures" class="file-tab-content">🖼️ Pictures Content</div>
+            <div id="music" class="file-tab-content is-hidden">🎵 Music Content</div>
+            <div id="videos" class="file-tab-content is-hidden">🎬 Videos Content</div>
+            <div id="documents" class="file-tab-content is-hidden">📄 Documents Content</div>
+        </div>
+    </section>
+</body>
+</html>
