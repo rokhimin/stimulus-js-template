@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Progress Bar Example</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.2/css/bulma.css"/>
+        <script type="module">
+            import { Application, Controller } from "https://unpkg.com/@hotwired/stimulus/dist/stimulus.js";
+            
+            window.Stimulus = Application.start();
+            
+            Stimulus.register("progress", class extends Controller {
+                static targets = ["bar", "value"];
+                
+                start() {
+                    this.barTarget.value = 0;
+                    this.valueTarget.textContent = "0%";
+                    this.incrementProgress();
+                }
+                
+                incrementProgress() {
+                    let currentValue = parseInt(this.barTarget.value);
+                    if (currentValue < 100) {
+                        this.barTarget.value = currentValue + 1;
+                        this.valueTarget.textContent = `${this.barTarget.value}%`;
+                        setTimeout(() => this.incrementProgress(), 50);
+                    }
+                }
+            });
+        </script>
+    </head>
+    <body>
+        <section class="section" data-controller="progress">
+            <div class="container">
+                <progress class="progress is-info" value="0" max="100" data-progress-target="bar"></progress>
+                <p class="has-text-centered" data-progress-target="value">0%</p>
+                <div class="buttons is-centered mt-4">
+                    <button class="button is-primary" data-action="click->progress#start">Start</button>
+                </div>
+            </div>
+        </section>
+    </body>
+</html>

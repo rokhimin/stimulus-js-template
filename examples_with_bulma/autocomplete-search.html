@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Autocomplete Search</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.2/css/bulma.css"/>
+    
+    <script type="module">
+        import { Application, Controller } from "https://unpkg.com/@hotwired/stimulus/dist/stimulus.js";
+
+        window.Stimulus = Application.start();
+
+        class AutocompleteController extends Controller {
+            static targets = ["input", "list"];
+
+            connect() {
+                this.suggestions = [
+                    "Apple", "Banana", "Cherry", "Date", "Grape",
+                    "Kiwi", "Lemon", "Mango", "Orange", "Papaya",
+                    "Man", "Manager", "Mandarin", "Mansion"
+                ];
+            }
+
+            search() {
+                const query = this.inputTarget.value.trim();
+                const words = query.split(" ");
+                const lastWord = words[words.length - 1].toLowerCase(); // Ambil kata terakhir
+
+                this.listTarget.innerHTML = ""; // Kosongkan daftar sebelum update
+
+                if (lastWord.length === 0) {
+                    this.listTarget.classList.add("is-hidden");
+                    return;
+                }
+
+                // Filter hanya kata terakhir
+                const matches = this.suggestions.filter(item => item.toLowerCase().includes(lastWord));
+
+                if (matches.length === 0) {
+                    this.listTarget.classList.add("is-hidden");
+                    return;
+                }
+
+                // Tampilkan hasil
+                matches.forEach(match => {
+                    const item = document.createElement("li");
+                    item.classList.add("p-2", "has-text-white", "has-background-grey-dark");
+                    item.textContent = match;
+                    item.addEventListener("click", () => {
+                        words[words.length - 1] = match; // Ganti kata terakhir dengan saran
+                        this.inputTarget.value = words.join(" ");
+                        this.listTarget.classList.add("is-hidden");
+                    });
+                    this.listTarget.appendChild(item);
+                });
+
+                this.listTarget.classList.remove("is-hidden");
+            }
+
+            hide() {
+                setTimeout(() => this.listTarget.classList.add("is-hidden"), 200);
+            }
+        }
+
+        Stimulus.register("autocomplete", AutocompleteController);
+    </script>
+
+    <style>
+        .autocomplete-list {
+            position: absolute;
+            width: 100%;
+            background: #333;
+            border: 1px solid #666;
+            border-radius: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+        .autocomplete-list li {
+            cursor: pointer;
+            padding: 5px;
+        }
+        .autocomplete-list li:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="p-5 has-background-dark">
+    <div class="container">
+        <div class="field" data-controller="autocomplete">
+            <label class="label has-text-white">Search</label>
+            <div class="control">
+                <input type="text" class="input" placeholder="Type to search..." 
+                    data-autocomplete-target="input"
+                    data-action="input->autocomplete#search blur->autocomplete#hide">
+            </div>
+            <ul class="autocomplete-list is-hidden" data-autocomplete-target="list"></ul>
+        </div>
+    </div>
+</body>
+</html>

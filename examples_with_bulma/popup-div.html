@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Contoh Pop-up dengan Stimulus.js</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.2/css/bulma.min.css"/>
+        <style>
+            .modal {
+                display: none;
+            }
+            .modal.is-active {
+                display: flex;
+            }
+            .container {
+                margin-top: 50px;
+                text-align: center;
+            }
+        </style>
+         <script type="module">
+            import { Application, Controller } from "https://unpkg.com/@hotwired/stimulus/dist/stimulus.js";
+            
+            window.Stimulus = Application.start();
+
+            Stimulus.register("popup",class extends Controller {
+                    static targets = ["modal"];
+                    
+                    openModal() {
+                        this.modalTarget.classList.add("is-active");
+                    }
+                    
+                    closeModal() {
+                        this.modalTarget.classList.remove("is-active");
+                    }
+                });
+            
+        </script>
+    </head>
+    <body>
+        <div class="container" data-controller="popup">
+            <h1 class="title">Contoh Pop-up dengan Stimulus.js</h1>
+            <button class="button is-primary" data-action="click->popup#openModal">
+                Klik untuk menampilkan pop-up
+            </button>
+
+            <div class="modal" data-popup-target="modal">
+                <div class="modal-background" data-action="click->popup#closeModal"></div>
+                <div class="modal-card">
+                    <header class="modal-card-head">
+                        <p class="modal-card-title">Pesan Pop-up</p>
+                        <button class="delete" aria-label="close" data-action="click->popup#closeModal"></button>
+                    </header>
+                    <section class="modal-card-body">
+                        <p>Ini adalah pesan yang muncul saat pop-up ditampilkan!</p>
+                        <p>Anda bisa menutup pop-up ini dengan mengklik tombol tutup atau mengklik di luar area pop-up.</p>
+                    </section>
+                    <footer class="modal-card-foot">
+                        <button class="button is-success" data-action="click->popup#closeModal">OK</button>
+                        <button class="button" data-action="click->popup#closeModal">Batal</button>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
