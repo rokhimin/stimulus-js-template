@@ -27,6 +27,4 @@ task :c do
   end
 end
 
-
-
 task default: :info
