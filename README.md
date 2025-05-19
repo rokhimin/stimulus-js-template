@@ -4,7 +4,7 @@
 - Navigation Bar Burger
 - Message Popup Delete
 - Thumbnail Animate
-
+- Greeting
 
 
 ## Developer 
