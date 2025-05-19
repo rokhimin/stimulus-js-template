@@ -14,9 +14,10 @@ task :test do
   sh "bundle exec rspec"
 end
 
-task :c, [:msg] do |t, args|
-  commit_msg = args[:msg] || "commit"
+task :c do
+  commit_msg = ENV["msg"] || ARGV[1] || "commit"
   changed = `git status --porcelain`.strip
+
   if changed.empty?
     puts "No changes to commit."
   else
@@ -25,6 +26,7 @@ task :c, [:msg] do |t, args|
     sh "git push -u origin main"
   end
 end
+
 
 
 task default: :info
