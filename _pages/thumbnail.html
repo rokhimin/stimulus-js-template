@@ -1,0 +1,22 @@
+---
+layout: default
+permalink: /thumbnail/
+---
+
+  <a href="{{ post.url | relative_url }}" data-controller="thumbnail">
+    <img
+      src="{{ base.url }}/assets/img/aladdin.jpg"
+      alt="Aladdin"
+      data-thumbnail-target="image"
+      class="w-full h-68 object-cover transition duration-300 ease-in-out rounded-lg"
+    />
+  </a>
+  
+  <a href="{{ post.url | relative_url }}" data-controller="thumbnail">
+    <img
+      src="{{ base.url }}/assets/img/aladdin.jpg"
+      alt="Aladdin"
+      data-thumbnail-target="image"
+      class="w-full h-68 object-cover transition duration-800 ease-out rounded-lg"
+    />
+  </a>

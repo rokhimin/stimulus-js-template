@@ -1,0 +1,23 @@
+---
+layout: default
+permalink: /dark_mode/
+---
+<div class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200" data-controller="theme">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold mb-4">Dark Mode Example</h1>
+    <p class="mb-4">
+      This is an example of a dark mode toggle using Stimulus.js and Tailwind CSS.
+    </p>
+    <p>
+      Click the button in the navigation bar to toggle between light and dark modes.
+    </p>
+    This Button =>
+        <button
+          class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300"
+          data-action="click->theme#toggle"
+        >
+          <span data-theme-target="icon" class="w-5 h-5"></span>
+        </button>
+  </div>
+
+</div>
